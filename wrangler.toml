@@ -1,0 +1,4 @@
+name = "qr_muhl_is"
+main = "src/index.ts"
+compatibility_date = "2022-10-31"
+node_compat = true
