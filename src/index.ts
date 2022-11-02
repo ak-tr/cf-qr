@@ -4,17 +4,45 @@ import { createCors } from "itty-cors";
 
 const { preflight, corsify } = createCors({ origins: ["*"] });
 
+
+
 const router = Router();
 const allowedQueryParams = ["size"];
 const headers = {
   json: { headers: { "Content-Type": "application/json" } },
   html: { headers: { "Content-Type": "text/html" } },
+  yaml: { headers: { "Content-Type": "text/yaml" } },
 };
 
 router.get("/qr/*", preflight, async (request: Request) => {
   console.log("Hitting qr route");
   // Parse data from URL
   const data = request.url.substring(request.url.indexOf("/qr/") + 4);
+
+  if (data.length == 0) {
+    return new Response(`
+# You are seeing this because you have provided no data to generate a
+# QR code. Read the usage below.
+
+name: qr-cf
+
+description: >
+  You may use this endpoint to generate QR codes from alphanumeric text
+  There are currently no restrictions to its usage - apart from the
+  100,000 request/day limit on the Cloudflare Workers free plan.
+
+usage:
+  baseUrl: "https://qr.muhl.is/qr/*"
+  accepts: "Any alphanumeric character combination."
+  queryParams:
+    size:
+      usage: "size?=256"
+      example: "https://qr.muhl.is/qr/foo?size=128"
+      limits: "Value must be between 64 and 2048."
+  returns: "SVG in text/html format."
+
+github: "https://github.com/ak-tr/cf-qr"`, headers.json);
+  }
 
   // Don't allow more than 1852 characters
   if (data.length > 1852) {
